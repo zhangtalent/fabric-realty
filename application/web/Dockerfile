@@ -1,4 +1,4 @@
-FROM node:16.17.1-alpine AS web
+FROM arm64v8/node:16.17.1-alpine AS web
 WORKDIR /root/togettoyou
 COPY package*.json ./
 RUN yarn config set registry https://registry.npmmirror.com/ && yarn install

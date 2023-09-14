@@ -18,6 +18,14 @@ type RealEstate struct {
 	LivingSpace  float64 `json:"livingSpace"`  //生活空间
 }
 
+type WeatherPredict struct {
+	WeatherPredictID string `json:"weatherPredictId"` //天气预测ID
+	Proprietor       string `json:"proprietor"`       //所有者(AI ID)
+	ValiateStatus    string `json:"valiateStatus"`    //验证状态
+	CreateTime       int64  `json:"createTime"`       //创建时间
+	PredictData      string `json:"predictData"`      //预测数据
+}
+
 // Selling 销售要约
 // 需要确定ObjectOfSale是否属于Seller
 // 买家初始为空
@@ -40,6 +48,15 @@ var SellingStatusConstant = func() map[string]string {
 		"expired":   "已过期", //销售期限到期
 		"delivery":  "交付中", //买家买下并付款,处于等待卖家确认收款状态,如若卖家未能确认收款，买家可以取消并退款
 		"done":      "完成",  //卖家确认接收资金，交易完成
+	}
+}
+
+// ValiateStatusConstant 检测状态
+var ValiateStatusConstant = func() map[string]string {
+	return map[string]string{
+		"waiting": "W",
+		"correct": "C",
+		"error":   "E",
 	}
 }
 
@@ -81,6 +98,7 @@ type DonatingGrantee struct {
 
 const (
 	AccountKey         = "account-key"
+	WeatherPredictKey  = "weather-predict-key"
 	RealEstateKey      = "real-estate-key"
 	SellingKey         = "selling-key"
 	SellingBuyKey      = "selling-buy-key"
