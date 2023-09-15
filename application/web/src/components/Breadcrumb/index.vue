@@ -33,7 +33,7 @@ export default {
       const first = matched[0]
 
       if (!this.isHome(first)) {
-        matched = [{ path: '/realestate', meta: { title: '房产信息' }}].concat(matched)
+        matched = [{ path: '/weatherPredict', meta: { title: 'AI预测' }}].concat(matched)
       }
 
       this.levelList = matched.filter(item => item.meta && item.meta.title && item.meta.breadcrumb !== false)
@@ -43,7 +43,7 @@ export default {
       if (!name) {
         return false
       }
-      return name.trim().toLocaleLowerCase() === 'realestate'.toLocaleLowerCase()
+      return name.trim().toLocaleLowerCase() === 'weatherPredict'.toLocaleLowerCase()
     },
     pathCompile(path) {
       // To solve this problem https://github.com/PanJiaChen/vue-element-admin/issues/561

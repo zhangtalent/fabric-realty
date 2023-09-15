@@ -77,6 +77,8 @@ func (t *BlockChainRealEstate) Invoke(stub shim.ChaincodeStubInterface) pb.Respo
 		return api.CreateWeatherPredict(stub, args)
 	case "queryWeatherPredictList":
 		return api.QueryWeatherPredictList(stub, args)
+	case "updateWeather":
+		return api.UpdateWeather(stub, args)
 	case "updateWeatherPredict":
 		return api.UpdateWeatherPredict(stub, args)
 	default:

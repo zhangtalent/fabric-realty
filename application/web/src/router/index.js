@@ -37,6 +37,12 @@ export const constantRoutes = [{
 },
 
 {
+  path: '/updateWeatherPredict',
+  component: () => import('@/views/updatePredict'),
+  hidden: true
+},
+
+{
   path: '/404',
   component: () => import('@/views/404'),
   hidden: true
@@ -63,6 +69,46 @@ export const constantRoutes = [{
  * the routes that need to be dynamically loaded based on user roles
  */
 export const asyncRoutes = [
+  {
+    path: '/weatherPredict',
+    component: Layout,
+    redirect: '/weatherPredict/all',
+    name: 'weatherPredict',
+    alwaysShow: true,
+    meta: {
+      title: 'AI预测',
+      icon: 'selling'
+    },
+    children: [{
+      path: 'all',
+      name: 'WeatherPredictAll',
+      component: () => import('@/views/weather/all/index'),
+      meta: {
+        title: '所有预测',
+        icon: 'sellingAll'
+      }
+    },
+    {
+      path: 'me',
+      name: 'WeatherPredictMe',
+      component: () => import('@/views/weather/me/index'),
+      meta: {
+        roles: ['editor'],
+        title: '我的预测',
+        icon: 'sellingMe'
+      }
+    },
+    {
+      path: '/addWeatherPredict',
+      name: 'AddWeatherPredict',
+      component: () => import('@/views/weather/add/index'),
+      meta: {
+        title: '新增预测',
+        icon: 'addRealestate'
+      }
+    }
+    ]
+  },
   {
     path: '/selling',
     component: Layout,

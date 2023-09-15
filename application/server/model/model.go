@@ -14,6 +14,23 @@ type Selling struct {
 	SellingStatus string  `json:"sellingStatus"` //销售状态
 }
 
+type WeatherPredict struct {
+	WeatherPredictID string `json:"weatherPredictId"` //天气预测ID
+	Proprietor       string `json:"proprietor"`       //所有者(AI ID)
+	ValiateStatus    string `json:"valiateStatus"`    //验证状态
+	CreateTime       int64  `json:"createTime"`       //创建时间
+	PredictData      string `json:"predictData"`      //预测数据
+}
+
+// ValiateStatusConstant 检测状态
+var ValiateStatusConstant = func() map[string]string {
+	return map[string]string{
+		"waiting": "W",
+		"correct": "C",
+		"error":   "E",
+	}
+}
+
 // SellingStatusConstant 销售状态
 var SellingStatusConstant = func() map[string]string {
 	return map[string]string{

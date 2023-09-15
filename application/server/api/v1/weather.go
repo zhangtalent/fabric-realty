@@ -2,47 +2,42 @@ package v1
 
 import (
 	bc "application/blockchain"
+	"application/model"
 	"application/pkg/app"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 type WeatherPredictRequestBody struct {
-	WeatherPredictID string `json:"weatherPredictId"` //天气预测ID
-	Proprietor       string `json:"proprietor"`       //所有者(AI ID)
-	ValiateStatus    string `json:"valiateStatus"`    //验证状态
-	CreateTime       int64  `json:"createTime"`       //创建时间
-	PredictData      string `json:"predictData"`      //预测数据
+	Proprietor  string `json:"proprietor"`  //所有者(AI ID)
+	PredictData string `json:"predictData"` //预测数据
 }
 
+type WeatherPredictUpdateRequestBody struct {
+	RealityData string `json:"realityData"`
+	Date        string `json:"date"`
+}
 type WeatherPredictQueryRequestBody struct {
-	Proprietor string `json:"proprietor"` //所有者(业主)(业主AccountId)
+	Proprietor string `json:"proprietor"`
 }
 
-func CreateRealEstate(c *gin.Context) {
+func CreateWeatherPredict(c *gin.Context) {
 	appG := app.Gin{C: c}
-	body := new(RealEstateRequestBody)
+	body := new(WeatherPredictRequestBody)
 	//解析Body参数
 	if err := c.ShouldBind(body); err != nil {
 		appG.Response(http.StatusBadRequest, "失败", fmt.Sprintf("参数出错%s", err.Error()))
 		return
 	}
-	if body.TotalArea <= 0 || body.LivingSpace <= 0 || body.LivingSpace > body.TotalArea {
-		appG.Response(http.StatusBadRequest, "失败", "TotalArea总面积和LivingSpace生活空间必须大于0，且生活空间小于等于总面积")
-		return
-	}
 	var bodyBytes [][]byte
-	bodyBytes = append(bodyBytes, []byte(body.AccountId))
 	bodyBytes = append(bodyBytes, []byte(body.Proprietor))
-	bodyBytes = append(bodyBytes, []byte(strconv.FormatFloat(body.TotalArea, 'E', -1, 64)))
-	bodyBytes = append(bodyBytes, []byte(strconv.FormatFloat(body.LivingSpace, 'E', -1, 64)))
+	bodyBytes = append(bodyBytes, []byte(body.PredictData))
 	//调用智能合约
-	resp, err := bc.ChannelExecute("createRealEstate", bodyBytes)
+	resp, err := bc.ChannelExecute("createWeatherPredict", bodyBytes)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, "失败", err.Error())
 		return
@@ -55,9 +50,9 @@ func CreateRealEstate(c *gin.Context) {
 	appG.Response(http.StatusOK, "成功", data)
 }
 
-func QueryRealEstateList(c *gin.Context) {
+func QueryWeatherPredictList(c *gin.Context) {
 	appG := app.Gin{C: c}
-	body := new(RealEstateQueryRequestBody)
+	body := new(WeatherPredictQueryRequestBody)
 	//解析Body参数
 	if err := c.ShouldBind(body); err != nil {
 		appG.Response(http.StatusBadRequest, "失败", fmt.Sprintf("参数出错%s", err.Error()))
@@ -68,7 +63,7 @@ func QueryRealEstateList(c *gin.Context) {
 		bodyBytes = append(bodyBytes, []byte(body.Proprietor))
 	}
 	//调用智能合约
-	resp, err := bc.ChannelQuery("queryRealEstateList", bodyBytes)
+	resp, err := bc.ChannelQuery("queryWeatherPredictList", bodyBytes)
 	if err != nil {
 		appG.Response(http.StatusInternalServerError, "失败", err.Error())
 		return
@@ -79,5 +74,42 @@ func QueryRealEstateList(c *gin.Context) {
 		appG.Response(http.StatusInternalServerError, "失败", err.Error())
 		return
 	}
+	appG.Response(http.StatusOK, "成功", data)
+}
+
+func UpdateWeatherPredict(c *gin.Context) {
+	appG := app.Gin{C: c}
+	body := new(WeatherPredictUpdateRequestBody)
+	//解析Body参数
+	if err := c.ShouldBind(body); err != nil {
+		appG.Response(http.StatusBadRequest, "失败", fmt.Sprintf("参数出错%s", err.Error()))
+		return
+	}
+	resp, err := bc.ChannelQuery("queryWeatherPredictList", [][]byte{}) //调用智能合约
+	if err != nil {
+		fmt.Printf("-quer失败%s", err.Error())
+		return
+	}
+	// 反序列化json
+	var dataWeather []model.WeatherPredict
+	if err = json.Unmarshal(bytes.NewBuffer(resp.Payload).Bytes(), &dataWeather); err != nil {
+		fmt.Printf("定时任务-反序列化json失败%s", err.Error())
+		return
+	}
+	for _, v := range dataWeather {
+		var bodyBytes [][]byte
+		bodyBytes = append(bodyBytes, []byte(body.RealityData))
+		bodyBytes = append(bodyBytes, []byte(body.Date))
+		bodyBytes = append(bodyBytes, []byte(v.Proprietor))
+		bodyBytes = append(bodyBytes, []byte(v.WeatherPredictID))
+		//调用智能合约
+		resp, err := bc.ChannelExecute("updateWeather", bodyBytes)
+		if err != nil {
+			appG.Response(http.StatusInternalServerError, "失败", err.Error())
+			return
+		}
+		fmt.Println(resp)
+	}
+	var data map[string]interface{}
 	appG.Response(http.StatusOK, "成功", data)
 }
