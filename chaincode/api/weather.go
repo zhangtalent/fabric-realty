@@ -126,14 +126,24 @@ func UpdateWeather(stub shim.ChaincodeStubInterface, args []string) pb.Response 
 	if err = json.Unmarshal(resultsWeatherPredict[0], &weatherPredict); err != nil {
 		return shim.Error(fmt.Sprintf("UpdateWeatherPredict-反序列化出错: %s", err))
 	}
-	if weatherPredict.PredictData == realityData {
-		weatherPredict.ValiateStatus = model.ValiateStatusConstant()["correct"]
-	} else {
-		weatherPredict.ValiateStatus = model.ValiateStatusConstant()["error"]
+	unixTimestamp := int64(weatherPredict.CreateTime)
+	// 假设目标日期是一个字符串
+	targetDateString := valiateTime
+	// 调用函数进行判断
+	isInTargetDate, err := IsUnixTimestampInTargetDate(unixTimestamp, targetDateString)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("UpdateWeatherPredict-日期转换出错: %s", err))
 	}
-	if err := utils.WriteLedger(weatherPredict, stub, model.WeatherPredictKey, []string{weatherPredict.Proprietor, weatherPredict.WeatherPredictID}); err != nil {
-		fmt.Println(err)
-		return shim.Error(fmt.Sprintf("%s", err))
+	if isInTargetDate {
+		if weatherPredict.PredictData == realityData {
+			weatherPredict.ValiateStatus = model.ValiateStatusConstant()["correct"]
+		} else {
+			weatherPredict.ValiateStatus = model.ValiateStatusConstant()["error"]
+		}
+		if err := utils.WriteLedger(weatherPredict, stub, model.WeatherPredictKey, []string{weatherPredict.Proprietor, weatherPredict.WeatherPredictID}); err != nil {
+			fmt.Println(err)
+			return shim.Error(fmt.Sprintf("%s", err))
+		}
 	}
 	//将成功创建的信息返回
 	weatherPredictByte, err := json.Marshal(weatherPredict)
